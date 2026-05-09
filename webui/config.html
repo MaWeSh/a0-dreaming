@@ -8,6 +8,25 @@
   <template x-if="$store.dreamingStore">
     <div x-init="$store.dreamingStore.onOpen()" x-destroy="$store.dreamingStore.cleanup()">
       
+      <!-- STATISTICS -->
+      <div class="section">
+        <div class="section-title">Statistics</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          <div style="text-align: center; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
+            <div style="font-size: 24px; font-weight: 600;" x-text="$store.dreamingStore.stats.sessions_analyzed"></div>
+            <div style="opacity: 0.7; font-size: 0.9em;">Sessions</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
+            <div style="font-size: 24px; font-weight: 600;" x-text="$store.dreamingStore.stats.errors_found"></div>
+            <div style="opacity: 0.7; font-size: 0.9em;">Errors Found</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
+            <div style="font-size: 24px; font-weight: 600;" x-text="$store.dreamingStore.stats.patterns_detected"></div>
+            <div style="opacity: 0.7; font-size: 0.9em;">Patterns</div>
+          </div>
+        </div>
+      </div>
+
       <!-- SENSITIVITY SECTION -->
       <div class="section">
         <div class="section-title">Detection Sensitivity</div>
@@ -83,7 +102,7 @@
             <span style="display: flex; align-items: center; gap: 8px;">
               <span class="material-symbols-outlined" style="font-size: 18px;"
                     :style="{ color: $store.dreamingStore.status === 'completed' ? 'var(--color-success)' : 
-                             $store.dreamingStore.status === 'error' ? 'var(--color-error)' : 'var(--color-text-secondary)'""
+                             $store.dreamingStore.status === 'error' ? 'var(--color-error)' : 'var(--color-text-secondary)'"
                     x-text="$store.dreamingStore.status === 'detecting' ? 'hourglass_empty' : 
                             $store.dreamingStore.status === 'dreaming' ? 'psychology' :
                             $store.dreamingStore.status === 'completed' ? 'check_circle' :
@@ -231,25 +250,6 @@
               <span class="material-symbols-outlined" style="font-size: 18px;">playlist_add_check</span>
               Execute Consolidation (<span x-text="$store.dreamingStore.selectedItems.length"></span> selected)
             </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- STATISTICS -->
-      <div class="section">
-        <div class="section-title">Statistics</div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-          <div style="text-align: center; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
-            <div style="font-size: 24px; font-weight: 600;" x-text="$store.dreamingStore.stats.sessions_analyzed"></div>
-            <div style="opacity: 0.7; font-size: 0.9em;">Sessions</div>
-          </div>
-          <div style="text-align: center; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
-            <div style="font-size: 24px; font-weight: 600;" x-text="$store.dreamingStore.stats.errors_found"></div>
-            <div style="opacity: 0.7; font-size: 0.9em;">Errors Found</div>
-          </div>
-          <div style="text-align: center; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
-            <div style="font-size: 24px; font-weight: 600;" x-text="$store.dreamingStore.stats.patterns_detected"></div>
-            <div style="opacity: 0.7; font-size: 0.9em;">Patterns</div>
           </div>
         </div>
       </div>
