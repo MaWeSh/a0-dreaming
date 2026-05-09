@@ -339,8 +339,33 @@ export const store = createStore("dreamingStore", {
             return;
         }
         
-        await this.consolidate(latestCheckpoint.id);
-        this.selectedItems = [];
+        // Pass selected_items to the API for filtered consolidation
+        this.loading = true;
+        this.error = null;
+        
+        try {
+            const result = await callJsonApi('/api/plugins/a0_dreaming/dreaming', {
+                action: 'consolidate',
+                checkpoint_id: latestCheckpoint.id,
+                selected_items: this.selectedItems
+            });
+            
+            if (result.error) {
+                throw new Error(result.error);
+            }
+            
+            await this.loadCheckpoints();
+            this.selectedItems = [];
+            toastFrontendSuccess(
+                `Consolidation complete: ${result.actions_applied || 0} actions applied`,
+                "Dreaming"
+            );
+        } catch (e) {
+            this.error = e.message;
+            toastFrontendError(`Consolidation failed: ${e.message}`, "Dreaming");
+        } finally {
+            this.loading = false;
+        }
     },
     
     /**

@@ -550,7 +550,8 @@ class Dreaming(Tool):
             elif action == "detect":
                 return self._response(self._action_detect(limit, sensitivity))
             elif action == "consolidate":
-                return await self._action_consolidate_async(checkpoint_id)
+                selected_items = kwargs.get("selected_items", [])
+                return await self._action_consolidate_async(checkpoint_id, selected_items)
             elif action == "restore":
                 return self._response(self._action_restore(checkpoint_id))
             elif action == "list_backups":
@@ -1086,10 +1087,15 @@ class Dreaming(Tool):
             "message": f"Dream analysis stored in memory. Created {sum(len(v) for v in stored.values())} memory entries from {len(sessions_data)} sessions.",
         }
     
-    async def _action_consolidate_async(self, checkpoint_id: int):
+    async def _action_consolidate_async(self, checkpoint_id: int, selected_items: list = None):
         """Apply planned changes from a checkpoint with memory storage.
         
         Phase 4 enhanced consolidate that stores insights to memory.
+        Supports selective consolidation via selected_items parameter.
+        
+        Args:
+            checkpoint_id: Checkpoint to apply
+            selected_items: Optional list of error IDs/entry_no to include (if None or empty, applies all)
         """
         if not checkpoint_id:
             return {
@@ -1119,7 +1125,20 @@ class Dreaming(Tool):
             }
         
         
-        actions_applied = checkpoint.get("actions_planned", [])
+        all_actions = checkpoint.get("actions_planned", [])
+        
+        # Filter by selected_items if provided
+        if selected_items and len(selected_items) > 0:
+            selected_set = set(selected_items)
+            actions_applied = [
+                a for a in all_actions 
+                if a.get("entry_no") in selected_set or a.get("id") in selected_set
+            ]
+            filter_note = f"Filtered to {len(actions_applied)} of {len(all_actions)} selected items."
+        else:
+            actions_applied = all_actions
+            filter_note = ""
+        
         memories_created = []
         
         # Store consolidation summary in memory
@@ -1152,9 +1171,11 @@ class Dreaming(Tool):
             "applied_at": checkpoint["applied_at"],
             "sessions_processed": checkpoint.get("sessions_analyzed", 0),
             "actions_applied": len(actions_applied),
+            "total_actions": len(all_actions),
+            "filtered": bool(selected_items and len(selected_items) > 0),
             "actions": actions_applied[:10],
             "memories_created": len(memories_created),
-            "message": f"Consolidation complete. {len(actions_applied)} actions applied, {len(memories_created)} memories created from checkpoint {checkpoint_id}.",
+            "message": f"Consolidation complete. {len(actions_applied)} actions applied from checkpoint {checkpoint_id}.{(' ' + filter_note) if filter_note else ''}",
         }
     def _response(self, data: Dict[str, Any]) -> str:
         """Format response as JSON string."""
