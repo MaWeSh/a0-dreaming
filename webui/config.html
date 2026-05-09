@@ -1,0 +1,253 @@
+<html>
+<head>
+  <title>A0 Dreaming</title>
+  <script type="module" src="/plugins/a0-dreaming/webui/store.js"></script>
+</head>
+<body>
+<div x-data>
+  <template x-if="$store.dreamingStore">
+    <div x-init="$store.dreamingStore.onOpen()" x-destroy="$store.dreamingStore.cleanup()">
+      
+      <!-- SENSITIVITY SECTION -->
+      <div class="section">
+        <div class="section-title">Detection Sensitivity</div>
+        <div class="section-description">
+          Configure how aggressively the dreamer detects error patterns in session history.
+        </div>
+        <div class="field">
+          <div class="field-label">
+            <div class="field-title">Sensitivity Level</div>
+          </div>
+          <div class="field-control">
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+              <input type="radio" name="sensitivity" value="strict" 
+                     x-model="$store.dreamingStore.sensitivity" />
+              <strong>Strict</strong> 
+              <span style="opacity: 0.7;">— Only tracebacks, explicit exceptions (71 patterns)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer;">
+              <input type="radio" name="sensitivity" value="moderate" 
+                     x-model="$store.dreamingStore.sensitivity" />
+              <strong>Moderate</strong> 
+              <span style="opacity: 0.7;">— Clear errors: failed, exception, traceback (227 patterns)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="sensitivity" value="loose" 
+                     x-model="$store.dreamingStore.sensitivity" />
+              <strong>Loose</strong> 
+              <span style="opacity: 0.7;">— All candidates including warnings (233 patterns)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXECUTION CONTROLS -->
+      <div class="section">
+        <div class="section-title">Execution Controls</div>
+        <div class="field">
+          <div class="field-label">
+            <div class="field-title">Actions</div>
+            <div class="field-description">Run analysis and manage dream sessions.</div>
+          </div>
+          <div class="field-control" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn" @click="$store.dreamingStore.runDetection()"
+                    :disabled="$store.dreamingStore.loading"
+                    :class="{ 'loading': $store.dreamingStore.loading }">
+              <span class="material-symbols-outlined" style="font-size: 18px;">search</span>
+              Run Detection
+            </button>
+            <button class="btn" @click="$store.dreamingStore.runDream()"
+                    :disabled="$store.dreamingStore.loading"
+                    :class="{ 'loading': $store.dreamingStore.loading }">
+              <span class="material-symbols-outlined" style="font-size: 18px;">psychology</span>
+              Dream Analysis
+            </button>
+            <button class="btn" @click="$store.dreamingStore.saveDream()"
+                    :disabled="$store.dreamingStore.loading"
+                    :class="{ 'loading': $store.dreamingStore.loading }">
+              <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
+              Save to Memory
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">
+            <div class="field-title">Schedule</div>
+            <div class="field-description">Automatic dream schedule (requires daemon mode).</div>
+          </div>
+          <div class="field-control">
+            <select x-model="$store.dreamingStore.schedule">
+              <option value="manual">Manual Only</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">
+            <div class="field-title">Status</div>
+          </div>
+          <div class="field-control">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <span class="material-symbols-outlined" style="font-size: 18px;"
+                    :style="{ color: $store.dreamingStore.status === 'completed' ? 'var(--color-success)' : 
+                             $store.dreamingStore.status === 'error' ? 'var(--color-error)' : 'var(--color-text-secondary)'""
+                    x-text="$store.dreamingStore.status === 'detecting' ? 'hourglass_empty' : 
+                            $store.dreamingStore.status === 'dreaming' ? 'psychology' :
+                            $store.dreamingStore.status === 'completed' ? 'check_circle' :
+                            $store.dreamingStore.status === 'error' ? 'error' : 'idle'">
+              </span>
+              <span x-text="$store.dreamingStore.status === 'idle' ? 'Ready' : 
+                           $store.dreamingStore.status === 'detecting' ? 'Detecting errors...' :
+                           $store.dreamingStore.status === 'dreaming' ? 'Analyzing patterns...' :
+                           $store.dreamingStore.status === 'completed' ? 'Completed' : 'Error'"></span>
+              <span style="opacity: 0.6;" x-show="$store.dreamingStore.lastRunTime"
+                    x-text="'Last run: ' + $store.dreamingStore.lastRunTime"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHECKPOINT SECTION -->
+      <div class="section">
+        <div class="section-title">Checkpoints</div>
+        <div class="section-description">
+          Up to 3 backups are retained (FIFO rotation). Restore to rollback before consolidation.
+        </div>
+        <div class="field">
+          <div class="field-label">
+            <div class="field-title">Available Backups</div>
+          </div>
+          <div class="field-control" style="width: 100%;">
+            <template x-if="$store.dreamingStore.checkpoints.length === 0">
+              <div style="opacity: 0.6; padding: 8px;">No checkpoints available. Run detection to create one.</div>
+            </template>
+            <template x-for="checkpoint in $store.dreamingStore.checkpoints" :key="checkpoint.id">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid var(--color-border);">
+                <div>
+                  <strong x-text="'Checkpoint #' + checkpoint.id"></strong>
+                  <span style="opacity: 0.6; margin-left: 8px;"
+                        x-text="$store.dreamingStore.formatTime(checkpoint.created_at)"></span>
+                  <span style="margin-left: 8px;" 
+                        x-text="'(' + checkpoint.sessions_analyzed + ' sessions, ' + checkpoint.errors_found + ' errors)'"></span>
+                </div>
+                <div style="display: flex; gap: 4px;">
+                  <button class="btn btn-small" @click="$store.dreamingStore.restore(checkpoint.id)"
+                          :disabled="$store.dreamingStore.loading"
+                          title="Restore to this checkpoint">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">restore</span>
+                  </button>
+                  <button class="btn btn-small" @click="$store.dreamingStore.consolidate(checkpoint.id)"
+                          :disabled="$store.dreamingStore.loading"
+                          title="Apply changes from this checkpoint">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-control" style="display: flex; gap: 8px;">
+            <button class="btn" @click="$store.dreamingStore.createBackup()"
+                    :disabled="$store.dreamingStore.loading"
+                    title="Create a new backup checkpoint">
+              <span class="material-symbols-outlined" style="font-size: 18px;">backup</span>
+              Create Backup Now
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECOVERY SECTION -->
+      <div class="section">
+        <div class="section-title">Recovery</div>
+        <div class="field">
+          <div class="field-label">
+            <div class="field-title">Quick Actions</div>
+            <div class="field-description">Restore latest checkpoint or clear all backups.</div>
+          </div>
+          <div class="field-control" style="display: flex; gap: 8px;">
+            <button class="btn" @click="$store.dreamingStore.checkpoints.length > 0 && $store.dreamingStore.restore($store.dreamingStore.checkpoints[0].id)"
+                    :disabled="$store.dreamingStore.loading || $store.dreamingStore.checkpoints.length === 0"
+                    title="Restore from most recent checkpoint">
+              <span class="material-symbols-outlined" style="font-size: 18px;">history</span>
+              Restore Latest
+            </button>
+            <button class="btn" style="background: var(--color-error-bg);" 
+                    @click="$store.dreamingStore.clearAllBackups()"
+                    :disabled="$store.dreamingStore.loading || $store.dreamingStore.checkpoints.length === 0"
+                    title="Delete all checkpoints (cannot be undone)">
+              <span class="material-symbols-outlined" style="font-size: 18px;">delete_forever</span>
+              Clear All Backups
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MANUAL APPROVAL SECTION -->
+      <div class="section" x-show="$store.dreamingStore.pendingItems.length > 0">
+        <div class="section-title">Detected Errors</div>
+        <div class="section-description">
+          Review and select which error patterns to include in consolidation.
+        </div>
+        <div class="field">
+          <div class="field-label">
+            <div class="field-title">Pending Items <span x-text="'(' + $store.dreamingStore.pendingItems.length + ')'"></span></div>
+          </div>
+          <div class="field-control" style="width: 100%;">
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+              <button class="btn btn-small" @click="$store.dreamingStore.selectAll()">Select All</button>
+              <button class="btn btn-small" @click="$store.dreamingStore.deselectAll()">Deselect All</button>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 4px;">
+              <template x-for="(item, index) in $store.dreamingStore.pendingItems.slice(0, 20)" :key="index">
+                <div style="display: flex; align-items: flex-start; gap: 8px; padding: 8px; border-bottom: 1px solid var(--color-border);">
+                  <input type="checkbox" 
+                         :checked="$store.dreamingStore.selectedItems.includes(item.entry_no || item.id)"
+                         @change="$store.dreamingStore.toggleItem(item.entry_no || item.id)" />
+                  <div style="flex: 1;">
+                    <div style="font-weight: 500;" x-text="item.heading || 'Error #' + (index + 1)"></div>
+                    <div style="font-size: 0.85em; opacity: 0.7;" x-text="item.content?.substring(0, 150) + (item.content?.length > 150 ? '...' : '')"></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-control">
+            <button class="btn" 
+                    @click="$store.dreamingStore.executeConsolidation()"
+                    :disabled="$store.dreamingStore.loading || $store.dreamingStore.selectedItems.length === 0">
+              <span class="material-symbols-outlined" style="font-size: 18px;">playlist_add_check</span>
+              Execute Consolidation (<span x-text="$store.dreamingStore.selectedItems.length"></span> selected)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATISTICS -->
+      <div class="section">
+        <div class="section-title">Statistics</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+          <div style="text-align: center; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
+            <div style="font-size: 24px; font-weight: 600;" x-text="$store.dreamingStore.stats.sessions_analyzed"></div>
+            <div style="opacity: 0.7; font-size: 0.9em;">Sessions</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
+            <div style="font-size: 24px; font-weight: 600;" x-text="$store.dreamingStore.stats.errors_found"></div>
+            <div style="opacity: 0.7; font-size: 0.9em;">Errors Found</div>
+          </div>
+          <div style="text-align: center; padding: 12px; background: var(--color-bg-secondary); border-radius: 8px;">
+            <div style="font-size: 24px; font-weight: 600;" x-text="$store.dreamingStore.stats.patterns_detected"></div>
+            <div style="opacity: 0.7; font-size: 0.9em;">Patterns</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </template>
+</div>
+</body>
+</html>
