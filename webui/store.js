@@ -52,7 +52,7 @@ export const store = createStore("dreamingStore", {
         this.error = null;
         
         try {
-            const result = await callJsonApi('/plugins/a0-dreaming/tools/dreaming', {
+            const result = await callJsonApi('/api/plugins/a0_dreaming/dreaming', {
                 action: 'detect',
                 sensitivity: this.sensitivity,
                 limit: 10
@@ -94,7 +94,7 @@ export const store = createStore("dreamingStore", {
         this.error = null;
         
         try {
-            const result = await callJsonApi('/plugins/a0-dreaming/tools/dreaming', {
+            const result = await callJsonApi('/api/plugins/a0_dreaming/dreaming', {
                 action: 'dream',
                 sensitivity: this.sensitivity,
                 limit: 10
@@ -130,7 +130,7 @@ export const store = createStore("dreamingStore", {
         this.error = null;
         
         try {
-            const result = await callJsonApi('/plugins/a0-dreaming/tools/dreaming', {
+            const result = await callJsonApi('/api/plugins/a0_dreaming/dreaming', {
                 action: 'save_dream',
                 sensitivity: this.sensitivity,
                 limit: 10
@@ -165,7 +165,7 @@ export const store = createStore("dreamingStore", {
         this.error = null;
         
         try {
-            const result = await callJsonApi('/plugins/a0-dreaming/tools/dreaming', {
+            const result = await callJsonApi('/api/plugins/a0_dreaming/dreaming', {
                 action: 'consolidate',
                 checkpoint_id: checkpointId
             });
@@ -200,7 +200,7 @@ export const store = createStore("dreamingStore", {
         this.error = null;
         
         try {
-            const result = await callJsonApi('/plugins/a0-dreaming/tools/dreaming', {
+            const result = await callJsonApi('/api/plugins/a0_dreaming/dreaming', {
                 action: 'restore',
                 checkpoint_id: checkpointId
             });
@@ -234,7 +234,7 @@ export const store = createStore("dreamingStore", {
     },
     
     async _fetchCheckpoints() {
-        const result = await callJsonApi('/plugins/a0-dreaming/tools/dreaming', {
+        const result = await callJsonApi('/api/plugins/a0_dreaming/dreaming', {
             action: 'list_backups'
         });
         return result.checkpoints || [];
@@ -245,7 +245,7 @@ export const store = createStore("dreamingStore", {
      */
     async loadStats() {
         try {
-            const result = await callJsonApi('/plugins/a0-dreaming/tools/dreaming', {
+            const result = await callJsonApi('/api/plugins/a0_dreaming/dreaming', {
                 action: 'list',
                 limit: 10
             });
@@ -271,7 +271,7 @@ export const store = createStore("dreamingStore", {
             for (let i = 1; i <= 3; i++) {
                 const cp = this.checkpoints.find(c => c.id === i);
                 if (cp) {
-                    await callJsonApi('/plugins/a0-dreaming/tools/dreaming', {
+                    await callJsonApi('/api/plugins/a0_dreaming/dreaming', {
                         action: 'restore',
                         checkpoint_id: i
                     });
