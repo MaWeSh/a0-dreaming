@@ -153,7 +153,7 @@ class Dreaming(ApiHandler):
             "next_step": "Review findings. To apply changes, use the dreaming tool with action='consolidate' and checkpoint_id=1",
             "no_changes_made": True,
         }
-    
+
     def _run_dream(self, DreamingTool, limit: int, sensitivity: str) -> Dict[str, Any]:
         """Run dream analysis using classmethod helpers."""
         chat_dirs = DreamingTool._get_chat_dirs()[:limit]
@@ -231,6 +231,10 @@ class Dreaming(ApiHandler):
                 "sessions_with_errors": sum(1 for s in sessions_data if len(s.get("errors") or []) > 0),
             },
             "no_changes_made": True,
+            # Frontend compatibility: also return key fields at top level
+            "recommendations": recommendations,  # Frontend expects this at top level
+            "recommendations_count": len(recommendations),
+            "patterns_detected": len(recurring_errors),
             "message": f"Dream analysis complete. Analyzed {len(sessions_data)} sessions, found {len(all_errors)} errors, {len(recurring_errors)} recurring patterns.",
         }
     
