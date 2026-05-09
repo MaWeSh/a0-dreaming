@@ -216,26 +216,52 @@
       <div class="section" x-show="$store.dreamingStore.pendingItems.length > 0">
         <div class="section-title">Detected Errors</div>
         <div class="section-description">
-          Review and select which error patterns to include in consolidation.
+          Select errors to include in consolidation. Checked items will be analyzed and stored in memory for future reference.
         </div>
         <div class="field">
           <div class="field-label">
             <div class="field-title">Pending Items <span x-text="'(' + $store.dreamingStore.pendingItems.length + ')'"></span></div>
+            <div class="field-description" style="margin-top: 4px;">Use checkboxes to select which errors to process. Unchecked items will be skipped.</div>
           </div>
           <div class="field-control" style="width: 100%;">
-            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-              <button class="btn btn-small" @click="$store.dreamingStore.selectAll()">Select All</button>
-              <button class="btn btn-small" @click="$store.dreamingStore.deselectAll()">Deselect All</button>
+            <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+              <button class="btn btn-small" 
+                      @click="$store.dreamingStore.selectAll()"
+                      title="Select all detected errors for consolidation">
+                Select All
+              </button>
+              <button class="btn btn-small" 
+                      @click="$store.dreamingStore.deselectAll()"
+                      title="Deselect all errors">
+                Deselect All
+              </button>
+              <span style="opacity: 0.7; font-size: 0.9em; margin-left: auto;" 
+                    x-show="$store.dreamingStore.selectedItems.length > 0"
+                    x-text="$store.dreamingStore.selectedItems.length + ' selected for processing'"></span>
             </div>
-            <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 4px;">
-              <template x-for="(item, index) in $store.dreamingStore.pendingItems.slice(0, 20)" :key="index">
-                <div style="display: flex; align-items: flex-start; gap: 8px; padding: 8px; border-bottom: 1px solid var(--color-border);">
+            <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-bg-secondary);">
+              <template x-for="(item, index) in $store.dreamingStore.pendingItems" :key="index">
+                <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-bottom: 1px solid var(--color-border); cursor: pointer;"
+                     :style="{ background: $store.dreamingStore.selectedItems.includes(item.entry_no || item.id) ? 'var(--color-bg)' : 'transparent' }"
+                     @click="$store.dreamingStore.toggleItem(item.entry_no || item.id)">
                   <input type="checkbox" 
                          :checked="$store.dreamingStore.selectedItems.includes(item.entry_no || item.id)"
-                         @change="$store.dreamingStore.toggleItem(item.entry_no || item.id)" />
-                  <div style="flex: 1;">
-                    <div style="font-weight: 500;" x-text="item.heading || 'Error #' + (index + 1)"></div>
-                    <div style="font-size: 0.85em; opacity: 0.7;" x-text="item.content?.substring(0, 150) + (item.content?.length > 150 ? '...' : '')"></div>
+                         @change="$store.dreamingStore.toggleItem(item.entry_no || item.id); $event.stopPropagation()"
+                         @click="$event.stopPropagation()"
+                         title="Include this error in consolidation"
+                         style="margin-top: 2px; width: 18px; height: 18px; cursor: pointer;" />
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;">
+                      <span style="font-weight: 600; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" 
+                            x-text="item.heading?.substring(0, 50) || 'Error #' + (index + 1)"
+                            :title="item.heading"></span>
+                      <span style="font-size: 0.8em; opacity: 0.6; white-space: nowrap;"
+                            x-show="item.session_name"
+                            x-text="'• ' + (item.session_name || '')"></span>
+                    </div>
+                    <div style="font-size: 0.85em; opacity: 0.7; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
+                         x-text="item.content?.substring(0, 200) + (item.content?.length > 200 ? '...' : '')"
+                         :title="item.content"></div>
                   </div>
                 </div>
               </template>
@@ -243,13 +269,18 @@
           </div>
         </div>
         <div class="field">
-          <div class="field-control">
+          <div class="field-control" style="display: flex; gap: 8px; align-items: center;">
             <button class="btn" 
                     @click="$store.dreamingStore.executeConsolidation()"
-                    :disabled="$store.dreamingStore.loading || $store.dreamingStore.selectedItems.length === 0">
+                    :disabled="$store.dreamingStore.loading || $store.dreamingStore.selectedItems.length === 0"
+                    title="Process all checked errors and store insights in Agent Zero memory for future reference">
               <span class="material-symbols-outlined" style="font-size: 18px;">playlist_add_check</span>
               Execute Consolidation (<span x-text="$store.dreamingStore.selectedItems.length"></span> selected)
             </button>
+            <span style="opacity: 0.6; font-size: 0.85em;"
+                  x-show="$store.dreamingStore.selectedItems.length === 0">
+              Select at least one error to consolidate
+            </span>
           </div>
         </div>
       </div>
