@@ -14,8 +14,8 @@ from pathlib import Path
 from collections import Counter, defaultdict
 import re
 
-from python.helpers.tool import Tool
-from python.helpers.errors import handle_error
+from helpers.tool import Tool
+from helpers.errors import handle_error
 from plugins._memory.helpers.memory import Memory
 
 
