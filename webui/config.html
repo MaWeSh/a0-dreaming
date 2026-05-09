@@ -312,9 +312,9 @@
                     
                     <!-- Preview Content (collapsed) -->
                     <div x-show="!expanded"
-                         style="font-size: 0.9em; opacity: 0.75; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--color-text-secondary);"
-                         x-text="item.content?.substring(0, 350) + (item.content?.length > 350 ? '...' : '')"
-                         :title="'Click Expand to view full content'"></div>
+                         style="font-size: 0.9em; opacity: 0.75; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 8; -webkit-box-orient: vertical; overflow: hidden; color: var(--color-text-secondary);"
+                         x-text="item.content?.substring(0, 500) + (item.content?.length > 500 ? '...' : '')"
+                         :title="item.content"></div>
                     
                     <!-- Full Content (expanded) -->
                     <div x-show="expanded"
