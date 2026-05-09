@@ -107,13 +107,16 @@ class Dreaming(Tool):
             if entry.get("type") == "user":
                 continue
             
-            # Handle explicit None values with 'or {}' pattern
-            content = (entry.get("content") or "").lower()
-            heading = (entry.get("heading") or "").lower()
+            # Handle explicit None values with 'or ""' pattern
+            # Keep original text for display, use lowercase for detection
+            original_content = entry.get("content") or ""
+            original_heading = entry.get("heading") or ""
+            content_lower = original_content.lower()
+            heading_lower = original_heading.lower()
             kvps = entry.get("kvps") or {}
             
-            # Check for error indicators
-            is_error = any(kw in content or kw in heading for kw in error_keywords)
+            # Check for error indicators (case-insensitive matching)
+            is_error = any(kw in content_lower or kw in heading_lower for kw in error_keywords)
             
             # Check kvps for error markers
             kvps_str = str(kvps).lower()
@@ -122,13 +125,13 @@ class Dreaming(Tool):
             
             if is_error:
                 errors.append({
-                    "entry_no": entry.get("no"),
+                    "id": entry.get("no"),  # ID for frontend selection
+                    "entry_no": entry.get("no"),  # Entry number for reference
                     "type": entry.get("type"),
-                    "heading": (heading or "")[:200],
-                    "content": (content or "")[:500],
+                    "heading": original_heading[:200],  # Original case for display
+                    "content": original_content[:500],  # Original case for display
                     "timestamp": entry.get("timestamp"),
                 })
-        
         return errors
     
     @classmethod
