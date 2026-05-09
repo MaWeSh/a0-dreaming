@@ -2,6 +2,39 @@
 <head>
   <title>A0 Dreaming</title>
   <script type="module" src="/plugins/a0_dreaming/webui/store.js"></script>
+  <style>
+    .consolidation-item {
+      transition: background 0.15s ease;
+    }
+    .consolidation-item:hover {
+      background: var(--color-bg-tertiary, rgba(255,255,255,0.05)) !important;
+    }
+    .consolidation-item.selected {
+      background: var(--color-bg) !important;
+      border-left: 3px solid var(--color-primary, #6366f1);
+    }
+    .expand-btn {
+      font-size: 0.8em;
+      padding: 4px 10px;
+      background: var(--color-bg-secondary);
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .expand-btn:hover {
+      background: var(--color-bg);
+      border-color: var(--color-primary, #6366f1);
+    }
+    .selection-badge {
+      font-weight: 600;
+      font-size: 0.95em;
+      padding: 6px 14px;
+      background: var(--color-primary, #6366f1);
+      color: white;
+      border-radius: 16px;
+    }
+  </style>
 </head>
 <body>
 <div x-data>
@@ -212,74 +245,114 @@
         </div>
       </div>
 
-      <!-- MANUAL APPROVAL SECTION -->
+      <!-- DETECTED ERRORS SECTION - IMPROVED UI -->
       <div class="section" x-show="$store.dreamingStore.pendingItems.length > 0">
         <div class="section-title">Detected Errors</div>
         <div class="section-description">
-          Select errors to include in consolidation. Checked items will be analyzed and stored in memory for future reference.
+          Review and select error patterns to include in consolidation. Checked items will be analyzed and stored in memory for future reference.
         </div>
         <div class="field">
           <div class="field-label">
             <div class="field-title">Pending Items <span x-text="'(' + $store.dreamingStore.pendingItems.length + ')'"></span></div>
-            <div class="field-description" style="margin-top: 4px;">Use checkboxes to select which errors to process. Unchecked items will be skipped.</div>
+            <div class="field-description" style="margin-top: 4px;">
+              💡 Click any row to toggle selection. Use the expand button to view full content.
+            </div>
           </div>
           <div class="field-control" style="width: 100%;">
-            <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+            <!-- Selection Controls -->
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;">
               <button class="btn btn-small" 
                       @click="$store.dreamingStore.selectAll()"
                       title="Select all detected errors for consolidation">
+                <span class="material-symbols-outlined" style="font-size: 16px;">select_all</span>
                 Select All
               </button>
               <button class="btn btn-small" 
                       @click="$store.dreamingStore.deselectAll()"
                       title="Deselect all errors">
+                <span class="material-symbols-outlined" style="font-size: 16px;">deselect</span>
                 Deselect All
               </button>
-              <span style="opacity: 0.7; font-size: 0.9em; margin-left: auto;" 
+              <span class="selection-badge" style="margin-left: auto;"
                     x-show="$store.dreamingStore.selectedItems.length > 0"
-                    x-text="$store.dreamingStore.selectedItems.length + ' selected for processing'"></span>
+                    x-text="$store.dreamingStore.selectedItems.length + ' of ' + $store.dreamingStore.pendingItems.length + ' selected'"></span>
             </div>
-            <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-bg-secondary);">
+            
+            <!-- Items List -->
+            <div style="max-height: 500px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-bg-secondary);">
               <template x-for="(item, index) in $store.dreamingStore.pendingItems" :key="index">
-                <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-bottom: 1px solid var(--color-border); cursor: pointer;"
-                     :style="{ background: $store.dreamingStore.selectedItems.includes(item.entry_no || item.id) ? 'var(--color-bg)' : 'transparent' }"
+                <div x-data="{ expanded: false }"
+                     class="consolidation-item"
+                     :class="{ 'selected': $store.dreamingStore.selectedItems.includes(item.entry_no || item.id) }"
+                     style="display: flex; align-items: flex-start; gap: 16px; padding: 16px; border-bottom: 1px solid var(--color-border); cursor: pointer;"
                      @click="$store.dreamingStore.toggleItem(item.entry_no || item.id)">
+                  
+                  <!-- Checkbox - Larger and More Visible -->
                   <input type="checkbox" 
                          :checked="$store.dreamingStore.selectedItems.includes(item.entry_no || item.id)"
                          @change="$store.dreamingStore.toggleItem(item.entry_no || item.id); $event.stopPropagation()"
                          @click="$event.stopPropagation()"
                          title="Include this error in consolidation"
-                         style="margin-top: 2px; width: 18px; height: 18px; cursor: pointer;" />
+                         style="width: 24px; height: 24px; min-width: 24px; cursor: pointer; accent-color: var(--color-primary, #6366f1); margin-top: 2px;" />
+                  
+                  <!-- Content Area -->
                   <div style="flex: 1; min-width: 0;">
-                    <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;">
-                      <span style="font-weight: 600; font-size: 0.95em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" 
-                            x-text="item.heading?.substring(0, 50) || 'Error #' + (index + 1)"
+                    <!-- Header Row -->
+                    <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+                      <span style="font-weight: 600; font-size: 1em; color: var(--color-text); flex: 1; min-width: 200px;"
+                            x-text="item.heading?.substring(0, 80) || 'Error #' + (index + 1)"
                             :title="item.heading"></span>
-                      <span style="font-size: 0.8em; opacity: 0.6; white-space: nowrap;"
+                      <span style="font-size: 0.85em; opacity: 0.6; white-space: nowrap;"
                             x-show="item.session_name"
-                            x-text="'• ' + (item.session_name || '')"></span>
+                            x-text="'📁 ' + (item.session_name || '')"></span>
+                      <span style="font-size: 0.8em; opacity: 0.5; white-space: nowrap;"
+                            x-show="item.timestamp"
+                            x-text="item.timestamp || ''"></span>
                     </div>
-                    <div style="font-size: 0.85em; opacity: 0.7; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
-                         x-text="item.content?.substring(0, 200) + (item.content?.length > 200 ? '...' : '')"
-                         :title="item.content"></div>
+                    
+                    <!-- Preview Content (collapsed) -->
+                    <div x-show="!expanded"
+                         style="font-size: 0.9em; opacity: 0.75; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--color-text-secondary);"
+                         x-text="item.content?.substring(0, 350) + (item.content?.length > 350 ? '...' : '')"
+                         :title="'Click Expand to view full content'"></div>
+                    
+                    <!-- Full Content (expanded) -->
+                    <div x-show="expanded"
+                         style="font-size: 0.9em; opacity: 0.8; line-height: 1.6; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; padding: 12px; background: var(--color-bg); border-radius: 6px; margin-top: 8px; border: 1px solid var(--color-border);"
+                         x-text="item.content || '(no content)'"
+                         @click.stop></div>
+                    
+                    <!-- Action Row -->
+                    <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center;">
+                      <button class="expand-btn"
+                              @click.stop="expanded = !expanded"
+                              :title="expanded ? 'Collapse content' : 'Expand to view full content'">
+                        <span x-text="expanded ? '▲ Collapse' : '▼ Expand'"></span>
+                      </button>
+                      <span style="font-size: 0.75em; opacity: 0.5;"
+                            x-show="item.content?.length > 350"
+                            x-text="(item.content?.length || 0) + ' characters'"></span>
+                    </div>
                   </div>
                 </div>
               </template>
             </div>
           </div>
         </div>
-        <div class="field">
-          <div class="field-control" style="display: flex; gap: 8px; align-items: center;">
-            <button class="btn" 
+        
+        <!-- Execute Button -->
+        <div class="field" style="margin-top: 16px;">
+          <div class="field-control" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <button class="btn" style="font-size: 1em; padding: 10px 20px; background: var(--color-primary, #6366f1); color: white; border: none;"
                     @click="$store.dreamingStore.executeConsolidation()"
                     :disabled="$store.dreamingStore.loading || $store.dreamingStore.selectedItems.length === 0"
                     title="Process all checked errors and store insights in Agent Zero memory for future reference">
-              <span class="material-symbols-outlined" style="font-size: 18px;">playlist_add_check</span>
+              <span class="material-symbols-outlined" style="font-size: 20px;">playlist_add_check</span>
               Execute Consolidation (<span x-text="$store.dreamingStore.selectedItems.length"></span> selected)
             </button>
-            <span style="opacity: 0.6; font-size: 0.85em;"
+            <span style="opacity: 0.7; font-size: 0.9em; color: var(--color-warning, #f59e0b);"
                   x-show="$store.dreamingStore.selectedItems.length === 0">
-              Select at least one error to consolidate
+              ⚠️ Select at least one error to proceed with consolidation
             </span>
           </div>
         </div>
