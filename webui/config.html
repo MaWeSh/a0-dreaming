@@ -18,22 +18,14 @@
           <div class="field-label">
             <div class="field-title">Sensitivity Level</div>
           </div>
-          <div class="field-control" style="display: flex; flex-direction: row; gap: 12px;">
-            <label title="Only tracebacks and explicit 'Exception:'/'Error:' markers. Safest mode." style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="radio" name="sensitivity" value="strict" style="margin: 0;"
-                     x-model="$store.dreamingStore.sensitivity" />
-              <strong>Strict</strong>
-            </label>
-            <label title="Clear errors including 'error', 'failed', 'exception', 'traceback'. Default." style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="radio" name="sensitivity" value="moderate" style="margin: 0;"
-                     x-model="$store.dreamingStore.sensitivity" />
-              <strong>Moderate</strong>
-            </label>
-            <label title="All candidates including warnings and 'unable to' patterns. Most comprehensive." style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-              <input type="radio" name="sensitivity" value="loose" style="margin: 0;"
-                     x-model="$store.dreamingStore.sensitivity" />
-              <strong>Loose</strong>
-            </label>
+          <div class="field-control" style="display: flex; flex-direction: row; align-items: center; gap: 16px;">
+            <select x-model="$store.dreamingStore.sensitivity" style="min-width: 120px;">
+              <option value="strict">Strict</option>
+              <option value="moderate">Moderate</option>
+              <option value="loose">Loose</option>
+            </select>
+            <span class="sensitivity-description" style="opacity: 0.8; font-size: 0.9em;"
+                  x-text="$store.dreamingStore.sensitivityDescription"></span>
           </div>
         </div>
       </div>

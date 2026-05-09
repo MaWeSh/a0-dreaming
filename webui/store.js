@@ -4,7 +4,16 @@ import { callJsonApi } from "/js/api.js";
 export const store = createStore("dreamingStore", {
     // Configuration state
     sensitivity: 'moderate',
-    schedule: 'manual',
+    
+    // Sensitivity level descriptions
+    sensitivityDescriptions: {
+        strict: 'Only tracebacks and explicit exceptions. Safest mode.',
+        moderate: 'Clear errors including failed, exception. Default.',
+        loose: 'All candidates including warnings. Most comprehensive.'
+    },
+    get sensitivityDescription() {
+        return this.sensitivityDescriptions[this.sensitivity] || '';
+    },
     
     // Checkpoint data
     checkpoints: [],
