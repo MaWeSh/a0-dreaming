@@ -74,6 +74,7 @@ export const store = createStore("dreamingStore", {
             // Update state with detection results
             this.checkpoints = await this._fetchCheckpoints();
             this.pendingItems = result.errors || [];
+            this.selectedItems = this.pendingItems.map(item => item.entry_no || item.id); // Initialize all selected
             this.stats.sessions_analyzed = result.sessions_analyzed || 0;
             this.stats.errors_found = result.errors_found || 0;
             this.stats.patterns_detected = result.patterns_detected || 0;

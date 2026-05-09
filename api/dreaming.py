@@ -147,6 +147,7 @@ class Dreaming(ApiHandler):
             "errors_by_type": {k: v[:5] for k, v in error_patterns.items()},  # Limit sample
             "recurring_errors": recurring_errors[:5],
             "success_patterns": success_patterns[:5],
+            "errors": all_errors[:50],  # Frontend expects 'errors' for pendingItems display
             "errors_sample": all_errors[:10],
             "actions_planned_count": len(actions_planned),
             "next_step": "Review findings. To apply changes, use the dreaming tool with action='consolidate' and checkpoint_id=1",
