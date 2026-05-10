@@ -251,35 +251,33 @@
         <div class="section-description">
           Review and select error patterns to include in consolidation. Checked items will be analyzed and stored in memory for future reference.
         </div>
-        <div class="field">
-          <div class="field-label">
-            <div class="field-title">Pending Items <span x-text="'(' + $store.dreamingStore.pendingItems.length + ')'"></span></div>
-            <div class="field-description" style="margin-top: 4px;">
-              💡 Click any row to toggle selection. Use the expand button to view full content.
-            </div>
-          </div>
-          <div class="field-control" style="width: 100%;">
-            <!-- Selection Controls -->
-            <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;">
-              <button class="btn btn-small" 
-                      @click="$store.dreamingStore.selectAll()"
-                      title="Select all detected errors for consolidation">
-                <span class="material-symbols-outlined" style="font-size: 16px;">select_all</span>
-                Select All
-              </button>
-              <button class="btn btn-small" 
-                      @click="$store.dreamingStore.deselectAll()"
-                      title="Deselect all errors">
-                <span class="material-symbols-outlined" style="font-size: 16px;">deselect</span>
-                Deselect All
-              </button>
-              <span class="selection-badge" style="margin-left: auto;"
-                    x-show="$store.dreamingStore.selectedItems.length > 0"
-                    x-text="$store.dreamingStore.selectedItems.length + ' of ' + $store.dreamingStore.pendingItems.length + ' selected'"></span>
-            </div>
-            
-            <!-- Items List -->
-            <div style="max-height: 500px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-bg-secondary);">
+        <!-- Instruction Header - Full Width Above Results -->
+        <div style="margin-bottom: 12px; padding: 10px 16px; background: var(--color-bg-secondary); border-radius: 8px; border: 1px solid var(--color-border); display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <span style="font-weight: 600; font-size: 1em;" x-text="'Pending Items (' + $store.dreamingStore.pendingItems.length + ')'"></span>
+          <span style="opacity: 0.8; font-size: 0.9em;">💡 Click any row to toggle selection. Use the expand button to view full content.</span>
+          <span class="selection-badge" style="margin-left: auto;"
+                x-show="$store.dreamingStore.selectedItems.length > 0"
+                x-text="$store.dreamingStore.selectedItems.length + ' of ' + $store.dreamingStore.pendingItems.length + ' selected'"></span>
+        </div>
+
+        <!-- Selection Controls -->
+        <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;">
+          <button class="btn btn-small"
+                  @click="$store.dreamingStore.selectAll()"
+                  title="Select all detected errors for consolidation">
+            <span class="material-symbols-outlined" style="font-size: 16px;">select_all</span>
+            Select All
+          </button>
+          <button class="btn btn-small"
+                  @click="$store.dreamingStore.deselectAll()"
+                  title="Deselect all errors">
+            <span class="material-symbols-outlined" style="font-size: 16px;">deselect</span>
+            Deselect All
+          </button>
+        </div>
+
+        <!-- Items List - Full Width Below -->
+        <div style="max-height: 500px; overflow-y: auto; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-bg-secondary);">
               <template x-for="(item, index) in $store.dreamingStore.pendingItems" :key="index">
                 <div x-data="{ expanded: false }"
                      class="consolidation-item"
@@ -337,8 +335,6 @@
                 </div>
               </template>
             </div>
-          </div>
-        </div>
         
         <!-- Execute Button -->
         <div class="field" style="margin-top: 16px;">
