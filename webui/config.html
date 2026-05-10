@@ -154,68 +154,54 @@
 
       <!-- CHECKPOINT SECTION -->
       <div class="section">
-        <div class="section-title">Checkpoints</div>
-        <div class="section-description">
-          Up to 3 backups are retained (FIFO rotation). Restore to rollback before consolidation.
-        </div>
-        <div class="field">
-          <div class="field-label">
-            <div class="field-title">Available Backups</div>
+        <!-- Header: Title + Clear button on same line -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <div class="section-title" style="margin-bottom: 0;">Checkpoints (<span x-text="$store.dreamingStore.checkpoints.length"></span>)</div>
+            <div class="section-description" style="margin-top: 4px;">Up to 3 backups retained. Restore to rollback before consolidation.</div>
           </div>
-          <div class="field-control" style="width: 100%;">
-            <template x-if="$store.dreamingStore.checkpoints.length === 0">
-              <div style="opacity: 0.6; padding: 8px;">No checkpoints available. Run detection to create one.</div>
-            </template>
-            <template x-if="$store.dreamingStore.checkpoints.length > 0">
-              <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-                <thead>
-                  <tr style="border-bottom: 2px solid var(--color-border);">
-                    <th style="text-align: left; padding: 4px 8px;">ID</th>
-                    <th style="text-align: left; padding: 4px 8px;">Created</th>
-                    <th style="text-align: center; padding: 4px 8px;">Sessions</th>
-                    <th style="text-align: center; padding: 4px 8px;">Errors</th>
-                    <th style="text-align: right; padding: 4px 8px;">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <template x-for="checkpoint in $store.dreamingStore.checkpoints" :key="checkpoint.id">
-                    <tr style="border-bottom: 1px solid var(--color-border);">
-                      <td style="padding: 6px 8px;">
-                        <strong x-text="'#' + checkpoint.id"></strong>
-                      </td>
-                      <td style="padding: 6px 8px; opacity: 0.8;"
-                          x-text="$store.dreamingStore.formatTime(checkpoint.created_at)"></td>
-                      <td style="padding: 6px 8px; text-align: center;" x-text="checkpoint.sessions_analyzed"></td>
-                      <td style="padding: 6px 8px; text-align: center;" x-text="checkpoint.errors_found"></td>
-                      <td style="padding: 6px 8px; text-align: right;">
-                        <button class="btn btn-small" @click="$store.dreamingStore.restore(checkpoint.id)"
-                                :disabled="$store.dreamingStore.loading"
-                                title="Restore to this checkpoint">
-                          <span class="material-symbols-outlined" style="font-size: 16px;">restore</span>
-                        </button>
-                        <button class="btn btn-small" @click="$store.dreamingStore.consolidate(checkpoint.id)"
-                                :disabled="$store.dreamingStore.loading"
-                                title="Apply changes from this checkpoint">
-                          <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
-                        </button>
-                      </td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
+          <button class="btn"
+                  style="background: var(--color-error-bg, #fee2e2); border: 1px solid var(--color-error, #dc2626); color: var(--color-error, #dc2626);"
+                  @click="$store.dreamingStore.clearAllBackups()"
+                  :disabled="$store.dreamingStore.loading || $store.dreamingStore.checkpoints.length === 0"
+                  title="Delete all checkpoints">
+            <span class="material-symbols-outlined" style="font-size: 18px;">delete_forever</span>
+            Clear All
+          </button>
+        </div>
+
+        <!-- Checkpoint Grid -->
+        <template x-if="$store.dreamingStore.checkpoints.length === 0">
+          <div style="opacity: 0.6; padding: 16px; text-align: center; background: var(--color-bg-secondary); border-radius: 8px;">
+            No checkpoints available. Run detection to create one.
+          </div>
+        </template>
+        <template x-if="$store.dreamingStore.checkpoints.length > 0">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <template x-for="checkpoint in $store.dreamingStore.checkpoints" :key="checkpoint.id">
+              <div style="background: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-weight: 600; font-size: 1.1em;" x-text="'ID: ' + checkpoint.id"></div>
+                <div style="opacity: 0.7; font-size: 0.9em;" x-text="$store.dreamingStore.formatTime(checkpoint.created_at)"></div>
+                <div style="display: flex; gap: 16px; font-size: 0.9em; padding: 8px 0; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+                  <div><span style="opacity: 0.7;">Sessions:</span> <strong x-text="checkpoint.sessions_analyzed"></strong></div>
+                  <div><span style="opacity: 0.7;">Errors:</span> <strong x-text="checkpoint.errors_found"></strong></div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-small" style="flex: 1;" @click="$store.dreamingStore.restore(checkpoint.id)"
+                          :disabled="$store.dreamingStore.loading"
+                          title="Restore to this checkpoint">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">restore</span> Restore
+                  </button>
+                  <button class="btn btn-small" style="flex: 1;" @click="$store.dreamingStore.consolidate(checkpoint.id)"
+                          :disabled="$store.dreamingStore.loading"
+                          title="Apply changes from this checkpoint">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">check</span> Apply
+                  </button>
+                </div>
+              </div>
             </template>
           </div>
-        </div>
-        <div class="field">
-          <div class="field-control" style="display: flex; gap: 8px;">
-            <button class="btn" @click="$store.dreamingStore.createBackup()"
-                    :disabled="$store.dreamingStore.loading"
-                    title="Create a new backup checkpoint">
-              <span class="material-symbols-outlined" style="font-size: 18px;">backup</span>
-              Create Backup Now
-            </button>
-          </div>
-        </div>
+        </template>
       </div>
 
       <!-- RECOVERY SECTION -->
